@@ -835,4 +835,4 @@ export const IOT_ABI = [
 	}
 ];
 export const subgraphUrl= "https://api.studio.thegraph.com/query/92756/carbon-x-listings/v0.1"
-export const backendUrl="https://carbon-x-server.onrender.com"
+export const backendUrl="https://carbonx.onrender.com"
