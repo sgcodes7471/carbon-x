@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Company1",
+    "sector": "sector1",
+    "country": "country1"
+  },
+  {
+    "name": "Company2",
+    "sector": "sector2",
+    "country": "country2"
+  },
+  {
+    "name": "Company3",
+    "sector": "sector3",
+    "country": "country3"
+  }
+]
