@@ -7,6 +7,7 @@ import logo from "../../assets/logo.png";
 import { Context } from "../../context/context.jsx";
 import Dialog from "../../components/dailog.jsx";
 import Loader from "../../components/loader.jsx";
+import { backendUrl } from "../../configs/constants.js";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -60,7 +61,7 @@ const Register = () => {
       // console.log(data);
       setLoading(true);
       const res = await axios.post(
-        "http://localhost:3000/api/v1/company/register",
+        `${backendUrl}/api/v1/company/register`,
         { data: data },
         {
           headers: {

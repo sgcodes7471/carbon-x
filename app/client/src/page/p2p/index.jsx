@@ -13,7 +13,7 @@ import Navbar from "../../components/navbar.jsx";
 import { SocketContext } from "../../context/socket.jsx";
 import Dialog from "../../components/dailog.jsx";
 import Loader from "../../components/loader.jsx";
-import { data, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import io from 'socket.io-client';
 import { backendUrl } from "../../configs/constants.js";
 
@@ -122,7 +122,7 @@ const P2P = () => {
     delete data.key;
     const hashed = handleHashing(data);
     const res = await axios.post(
-      "http://localhost:3000/api/v1/company/register",
+      `${backendUrl}/api/v1/company/register`,
       { data: hashed },
       {
         headers: {

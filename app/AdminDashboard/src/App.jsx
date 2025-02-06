@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import { backendUrl } from "../../client/src/configs/constants.js";
 function App() {
   const [companies, setCompanies] = useState([]);
   const [selectedPDF, setSelectedPDF] = useState(null);
@@ -8,7 +9,7 @@ function App() {
     const fetchCompanyData = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:3000/api/v1/dashboard/getCompanyData"
+          `${backendUrl}/api/v1/dashboard/getCompanyData`
         );
         console.log("Fetched data:", response.data); // Debugging log
 

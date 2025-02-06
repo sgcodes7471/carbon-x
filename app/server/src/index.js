@@ -11,6 +11,7 @@ import mqttClient from "./config/iot.js";
 import Iot from "./models/iot.models.js";
 import cron from 'node-cron'
 import { contract } from "./config/evm.js";
+import { LOCALHOST_URL, DEPLOYED_URL } from "./constants.js";
 
 dotenv.config();
 
@@ -20,7 +21,7 @@ const server = http.createServer(app);
 export const io = new SocketIo(server, {
   cors: {
     origin: "*", // Update to specific domain in production
-    methods: ["GET", "POST"],
+    methods: [LOCALHOST_URL, DEPLOYED_URL],
   },
 });
 
@@ -125,7 +126,7 @@ async function PublishData(data) {
 // Middleware
 app.use(
   cors({
-    origin: "*", // Update to specific domain in production
+    origin: [LOCALHOST_URL , DEPLOYED_URL], // Update to specific domain in production
     credentials: true,
   })
 );

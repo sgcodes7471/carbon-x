@@ -7,6 +7,7 @@ import CryptoJS from "crypto-js";
 import logo from "../../assets/logo.png";
 import Dialog from "../../components/dailog.jsx";
 import Loader from "../../components/loader.jsx";
+import { backendUrl } from "../../configs/constants.js";
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -51,7 +52,7 @@ const SignIn = () => {
       }
       const cid = transaction.slice(7);
       const response = await axios.get(
-        `http://localhost:3000/api/v1/company/signin/${cid}`,
+        `${backendUrl}/api/v1/company/signin/${cid}`,
         {
           headers: {
             "Content-Type": "application/json",

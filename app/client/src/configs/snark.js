@@ -1,14 +1,16 @@
 // import {groth16} from 'snarkjs'
 
+import { backendUrl } from "./constants.js";
+
 const snarkjs = window.snarkjs;
 export const generateSellProof  = async({balance , units})=>{
     try {
         const input = {
             balance:balance , credits:units
         };
-        const wasmfile = 'http://localhost:3000/sell.wasm';
-        const zkeyfile = 'http://localhost:3000/sell.zkey';
-        const jsonfile = 'http://localhost:3000/sell_verification_key.json'
+        const wasmfile = `${backendUrl}/sell.wasm`;
+        const zkeyfile = `${backendUrl}/sell.zkey`;
+        const jsonfile = `${backendUrl}/sell_verification_key.json`
         const {proof , publicSignals} = await snarkjs.groth16.fullProve(
             input, wasmfile , zkeyfile //get these files from ipfs instead
         );
@@ -31,9 +33,9 @@ export const generateBuyProof = async({balance , units , limit})=>{
         const input = {
             balance:balance , limit:limit ,  creditBuy:units
         };
-        const wasmfile = 'http://localhost:3000/buy.wasm';
-        const zkeyfile = 'http://localhost:3000/buy.zkey';
-        const jsonfile = 'http://localhost:3000/buy_verification_key.json'
+        const wasmfile = `${backendUrl}/buy.wasm`;
+        const zkeyfile = `${backendUrl}/buy.zkey`;
+        const jsonfile = `${backendUrl}/buy_verification_key.json`
         const {proof , publicSignals } = await snarkjs.groth16.fullProve(
             input , wasmfile , zkeyfile
         )
