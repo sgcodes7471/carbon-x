@@ -71,8 +71,6 @@ const P2P = () => {
   }, [errorPurchase, errorList]);
 
   useEffect(() => {
-    console.log(dataList?.listeds)
-    console.log(dataPurchase?.purchaseds)
     if (dataList?.listeds && dataPurchase?.purchaseds) {
       const purchaseIds = dataPurchase?.purchaseds.map((item) => item.listId);
 
@@ -86,27 +84,23 @@ const P2P = () => {
   }, [dataList, dataPurchase]);
 
 
-  useEffect(()=>{
-    console.log(socketId)
-  },[socketId])
-
   useEffect(() => {
     const newSocket = io(backendUrl);
     setSocketId(newSocket);
   
     newSocket.on("connect", () => {
       setSocketId(newSocket);
-      console.log("Connected to socket:", newSocket.id);
+      // console.log("Connected to socket:", newSocket.id);
     });
 
     newSocket.on("disconnect", () => {
-      console.log("Disconnected from socket");
+      // console.log("Disconnected from socket");
       setSocketId(null);
     });
   
     return () => {
       newSocket.disconnect();
-      console.log("Socket disconnected on cleanup");
+      // console.log("Socket disconnected on cleanup");
     };
   },[])
 
@@ -125,7 +119,6 @@ const P2P = () => {
       activity: Number(accData.activity) + Number(change),
     };
     setAccData(data);
-    console.log(data)
     delete data.key;
     const hashed = handleHashing(data);
     const res = await axios.post(
@@ -137,7 +130,6 @@ const P2P = () => {
         },
       }
     );
-    console.log(res.data.data.cid);
     const transaction = await updateURI({
       data: {
         tokenId: accData.tokenId,
@@ -156,9 +148,7 @@ const P2P = () => {
       totalPrice: listings[index].totalPrice,
     };
     const doc = new jsPDF();
-    console.log(response)
     const formattedData = JSON.stringify(response, null, 2);
-    console.log(formattedData)
     doc.setFont("Courier", "normal");
     doc.text("Receipt Data:", 10, 10);
     doc.text(formattedData, 10, 20);
@@ -167,60 +157,83 @@ const P2P = () => {
   }
 
   async function handleBuy(index) {
-    if(!accData.key) {
-      navigate('/sign-in');
-      return
-    }
-    setp2pLoading(true);
-    let res = await generateBuyProof({
-      balance: accData.carbonCredits || 100,
-      units: listings[index].units,
-      limit: accData.creditsLimit || 150,
-    });
-    if (!res){ 
+    try {
+      if(!accData.key) {
+        navigate('/sign-in');
+        return
+      }
+      setp2pLoading(true);
+      let res = await generateBuyProof({
+        balance: accData.carbonCredits || 100,
+        units: listings[index].units,
+        limit: accData.creditsLimit || 150,
+      });
+      if (!res){ 
+        setp2pLoading(false);
+        throw new Error();
+      }
+      res = await BuyCredits({
+        listId: listings[index].listId,
+        address: accData.user,
+        totalPrice: listings[index].totalPrice
+      });
+      if (!res){ 
+        setp2pLoading(false);
+        throw new Error();
+      }
+      await handleIPFSUpdate(listings[index].units * -1);
+      generateReceipt(res, index);
+      if (socketId) {
+        socketId.emit(
+          "trade",
+          `Anonymous bought ${listings[index].units} credits, each for ${listings[index].price}`
+        );
+      }
       setp2pLoading(false);
-      return;
-    }
-    res = await BuyCredits({
-      listId: listings[index].listId,
-      address: accData.user,
-      totalPrice: listings[index].totalPrice
-    });
-    if (!res){ 
+    } catch (error) {
       setp2pLoading(false);
-      return;
+      setOpenDialog(true);
+      setDialogProps({
+        msg: `Transaction Unsuccessfull`,
+        closefn: setOpenDialog,
+        callback: null,
+      });
     }
-    await handleIPFSUpdate(listings[index].units * -1);
-    console.log(res)
-    generateReceipt(res, index);
-    if (socketId) {
-      console.log(socketId)
-      socketId.emit(
-        "trade",
-        `Anonymous bought ${listings[index].units} credits, each for ${listings[index].price}`
-      );
-    }
-    setp2pLoading(false);
   }
 
   async function handleSell() {
-    formData.totalPrice = formData.price * formData.units;
-    setp2pLoading(true);
-    let res = await generateSellProof({
-      balance: accData.carbonCredits || 100,
-      units: formData.units,
-    });
-    if (!res){ 
-      setp2pLoading(false)
-      return;
-    }
-    res = await SellCredits({ data: formData, address: accData.user });
-    if (!res){ 
+    try {
+      formData.totalPrice = formData.price * formData.units;
+      setp2pLoading(true);
+      let res = await generateSellProof({
+        balance: accData.carbonCredits || 100,
+        units: formData.units,
+      });
+      if (!res){ 
+        setp2pLoading(false)
+        throw new Error();
+      }
+      res = await SellCredits({ data: formData, address: accData.user });
+      if (!res){ 
+        setp2pLoading(false);
+        throw new Error();
+      }
+      await handleIPFSUpdate(formData.units);
       setp2pLoading(false);
-      return;
+      setOpenDialog(true);
+      setDialogProps({
+        msg: `Transaction Successfull!?`,
+        closefn: setOpenDialog,
+        callback: null,
+      });
+    } catch (error) {
+      setOpenDialog(true);
+      setDialogProps({
+        msg: `Could not List due to some Error`,
+        closefn: setOpenDialog,
+        callback: null,
+      });
     }
-    await handleIPFSUpdate(formData.units);
-    setp2pLoading(false);
   }
 
   const handleChange = async (e) => {

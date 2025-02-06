@@ -55,9 +55,9 @@ const Register = () => {
         user: accData.user
       };
       setFormData(temp);
-      console.log(temp);
+      // console.log(temp);
       const data = handleHashing(temp);
-      console.log(data);
+      // console.log(data);
       setLoading(true);
       const res = await axios.post(
         "http://localhost:3000/api/v1/company/register",

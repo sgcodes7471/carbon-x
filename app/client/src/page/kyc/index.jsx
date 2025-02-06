@@ -55,9 +55,9 @@ const KYC = () => {
         },
       });
       if (res.status === 500) throw new Error("Documents not Submitted");
-      console.log('Documents Submitted')
+      // console.log('Documents Submitted')
     } catch (error) {
-      console.log(`Some Error occured\n${error.message}`);
+      // console.log(`Some Error occured\n${error.message}`);
     }
   }
 

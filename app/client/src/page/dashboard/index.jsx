@@ -58,21 +58,21 @@ function Dashboard() {
       newSocket.on("connect", () => {
         setSocketId(newSocket);
         newSocket.emit("subscribe", accData.iots);
-        console.log("Connected to socket:", newSocket.id);
+        // console.log("Connected to socket:", newSocket.id);
       });
     
       newSocket.on("activities", (activities) => {
         if (!activities){ 
-          console.log('No activites')
+          // console.log('No activites')
           return;
         }
         setActivities(JSON.parse(activities));
-        console.log("Received activities:", activities);
+        // console.log("Received activities:", activities);
       });
     
       newSocket.on("trade", (msg) => {
         setActivities((prevActivities) => [...prevActivities, msg]);
-        console.log("New trade received:", msg);
+        // console.log("New trade received:", msg);
       });
     
       newSocket.on("data", (data) => {
@@ -95,17 +95,17 @@ function Dashboard() {
         //   return tempData;
         // });
     
-        console.log("Received carbon credits data:", data);
+        // console.log("Received carbon credits data:", data);
       });
     
       newSocket.on("disconnect", () => {
-        console.log("Disconnected from socket");
+        // console.log("Disconnected from socket");
         setSocketId(null);
       });
     
       return () => {
         newSocket.disconnect();
-        console.log("Socket disconnected on cleanup");
+        // console.log("Socket disconnected on cleanup");
       };
     }, [isConnected]); 
 

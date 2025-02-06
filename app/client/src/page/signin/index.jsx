@@ -73,7 +73,13 @@ const SignIn = () => {
       setLoading(false);
       navigate("/dashboard");
     } catch (error) {
-      alert(`some Error Occured\n${error}`);
+      setLoading(false);
+      setDialogProps({
+        msg:"Wrong Private Key",
+        closefn:setOpenDialog,
+        callback:null
+      })
+      setOpenDialog(true)
     }
   }
 
