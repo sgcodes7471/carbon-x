@@ -139,12 +139,15 @@ app.use(express.static('public'));
 app.use("/api/v1/company", companyRoutes);
 app.use("/api/v1/dashboard", dashboardRoutes);
 
-
 // Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).send("Something went wrong!");
 });
+
+app.get('/ping',(req,res)=>{
+  return res.status(200).send('PONG');
+})
 
 // Connect to DB and start the server
 const startServer = async () => {
