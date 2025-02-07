@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState  } from "react";
+import React, { useContext, useEffect, useState , useRef  } from "react";
 import { useNavigate } from "react-router";
 import { Context } from "../../context/context.jsx";
 import PieChart from "../../components/pieChart.jsx";
@@ -13,7 +13,7 @@ import Loader from "../../components/loader.jsx";
 function Dashboard() {
 
     const context = useContext(Context);
-    const {accData , setAccData , isConnected  , setIotData , iotData} = context;
+    const {accData , socketId , setAccData , isConnected  , setIotData , iotData} = context;
     const socketContext = useContext(SocketContext);
     const { setSocketId} = socketContext;
     const iots = accData.iots;
@@ -39,7 +39,7 @@ function Dashboard() {
         );
         setLoading(false);
         setError(false);
-        setIotData(temp);
+        // setIotData(temp);
       } catch (error) {
         setLoading(false);
         setError('Some Error Fecthing the previous Consumptions')
@@ -50,64 +50,64 @@ function Dashboard() {
       getCreditsTillYesterday();
     }, []); 
 
-
+    const socketRef = useRef(null);
+    const iotDataRef = useRef(iotData);
+  
     useEffect(() => {
-      const newSocket = io(backendUrl);
-      setSocketId(newSocket);
-    
-      newSocket.on("connect", () => {
-        setSocketId(newSocket);
-        newSocket.emit("subscribe", accData.iots);
-        // console.log("Connected to socket:", newSocket.id);
-      });
-    
-      newSocket.on("activities", (activities) => {
-        if (!activities){ 
-          // console.log('No activites')
-          return;
-        }
-        setActivities(JSON.parse(activities));
-        // console.log("Received activities:", activities);
-      });
-    
-      newSocket.on("trade", (msg) => {
-        setActivities((prevActivities) => [...prevActivities, msg]);
-        // console.log("New trade received:", msg);
-      });
-    
-      newSocket.on("data", (data) => {
-        // setIotData((prevIotData) => {
-        //   let tempData = []
-        //   let history = [...tempData.get(data.identifier)];
-        //   history[history.length - 1] = data.carbonCredits;
-        //   tempData.set(data.identifier, history);
-    
-        //   let consumption = 0;
-        //   tempData.forEach((value) => {
-        //     consumption += value[value.length - 1];
-        //   });
-    
-        //   setAccData((prevAccData) => ({
-        //     ...prevAccData,
-        //     carbonCredits: prevAccData.limit - prevAccData.activity - consumption,
-        //   }));
-    
-        //   return tempData;
-        // });
-    
-        // console.log("Received carbon credits data:", data);
-      });
-    
-      newSocket.on("disconnect", () => {
-        // console.log("Disconnected from socket");
-        setSocketId(null);
-      });
-    
+      if (!socketRef.current) {
+        const newSocket = io(backendUrl);
+        socketRef.current = newSocket;
+  
+        newSocket.on("connect", () => {
+          newSocket.emit("subscribe", accData.iots);
+        });
+  
+        newSocket.on("activities", (activities) => {
+          if (!activities) return;
+          setActivities(JSON.parse(activities));
+        });
+  
+        newSocket.on("trade", (msg) => {
+          setActivities((prevActivities) => [...prevActivities, msg]);
+        });
+  
+        newSocket.on("data", (data) => {
+          console.log(data.carbonCredits) 
+          setIotData((prevIotData) => [...prevIotData, data.carbonCredits]);
+
+          // setIotData((prevIotData)=>[...prevIotData,data.cabronCredits]);
+          // setIotData((prevIotData) => {
+          //   let tempData = new Map(prevIotData);
+          //   let history = [...tempData.get(data.identifier)];
+          //   history[history.length - 1] = data.carbonCredits;
+          //   tempData.set(data.identifier, history);
+      
+          //   let consumption = 0;
+          //   tempData.forEach((value) => {
+          //     consumption += value[value.length - 1];
+          //   });
+      
+            // setAccData((prevAccData) => ({
+            //   ...prevAccData,
+            //   carbonCredits: prevAccData.limit - prevAccData.activity - consumption,
+            // }));
+      
+          //   return tempData;
+          // });
+        });
+  
+        newSocket.on("disconnect", () => {
+          socketRef.current = null;
+        });
+      }
+  
       return () => {
-        newSocket.disconnect();
-        // console.log("Socket disconnected on cleanup");
+        if (socketRef.current) {
+          socketRef.current.disconnect();
+          socketRef.current = null;
+        }
       };
-    }, [isConnected]); 
+    }, [isConnected]); // Removed iotData from dependencies
 
   return (
     <>
@@ -137,9 +137,9 @@ function Dashboard() {
              }
             </div>
 
-            <div className="w-full mt-2 bg-[#191919] h-[25vh] px-4 py-4 rounded-[10px]">
-              <p className="text-xl">Today's Activities:</p>
-              <div className="w-full mt-4">
+            <div className="w-full mt-2 bg-[#191919] h-[25vh] px-4 py-4 rounded-[10px] overflow-x-auto">
+              <p className="text-xl sticky top-0 bg-[#191919">Today's Activities:</p>
+              <div className="w-full mt-4" style={{height:'max-content'}}>
                 {activities &&
                   activities.length > 0 ? 
                   (
